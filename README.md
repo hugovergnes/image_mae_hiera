@@ -1,13 +1,13 @@
-# video_mae_hiera
-Hierarchical ViT applied to MAE video pre-training
+# Image MAE for Hiera
+Hierarchical ViT applied to MAE image pre training
 
-In this project, I'm looking at applying Video MAE [1] to Hiera [2] while using much less resources.
+In this project, I'm looking at applying Image MAE [1] to Hiera [2] while using much less resources.
 
 If you want to learn more or have something to discuss please feel free to contact me or checkout the sources for the original research!
 
 # Context
 
-Video pre-training has been at the center of research for a lot of state of the art models, but the computational requirements are crazy. In the original Video MAE paper [3], they use 128 A100 GPUs! Very few groups can do that. 
+Image pre-training has been at the center of research for a lot of state of the art models, but the computational requirements are prohibitive. In the original Video MAE paper [3], they use 128 A100 GPUs! Very few groups can do that. 
 
 
 # References
