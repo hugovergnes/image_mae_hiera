@@ -474,6 +474,35 @@ class MaskedAutoencoderHiera(nn.Module):
 
         return patched, pred, ~pred_mask
 
+    def optimizer_params(self, optimizer_config):
+        """
+        Avoid Weight decay on frozen weights, pos embedding, LayerNorm and Bias.
+
+        Copied almost directly from here:
+        https://github.com/rwightman/pytorch-image-models/blob/v0.3.3/timm/optim/optim_factory.py#L25
+
+        And the default MAE setup:
+        https://github.com/facebookresearch/mae/blob/main/main_pretrain.py#L179
+
+        """
+        weight_decay = 0.05  # TODO: Fix this hardcoding
+
+        decay = []
+        no_decay = []
+        for name, param in self.named_parameters():
+            if not param.requires_grad:
+                continue
+            if name.startswith("pos_embed"):
+                no_decay.append(param)
+            elif len(param.shape) == 1 or name.endswith(".bias"):
+                no_decay.append(param)
+            else:
+                decay.append(param)
+        return [
+            {"params": no_decay, "weight_decay": 0.0},
+            {"params": decay, "weight_decay": weight_decay},
+        ]
+
 
 class MAEHieraSmall(MaskedAutoencoderHiera):
     def __init__(
