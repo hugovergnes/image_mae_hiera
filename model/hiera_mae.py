@@ -327,26 +327,30 @@ class MaskedAutoencoderHiera(nn.Module):
         return torch.einsum("nchw->nhwc", x)
 
     def get_random_mask(self, x, mask_ratio):
-        """
-        Generates a random mask, mask_ratio fraction are dropped.
-        1 is *keep*, 0 is *remove*. Useful for MAE, FLIP, etc.
+        """Generates a random mask.
+
+        Note that x is only used for the batch size and device.
+
+        Args:
+            x (torch.Tensor): _description_
+            mask_ratio (float): fraction of the dropped windows.
+
+        Returns:
+            torch.Tensor: Boolean tensor. True is keep and False is Remove.
         """
         B = x.shape[0]
         # Tokens selected for masking at mask unit level
-        num_windows = math.prod(self.mask_spatial_shape)  # num_mask_units
-        len_keep = int(num_windows * (1 - mask_ratio))
+        num_windows = math.prod(self.mask_spatial_shape)
         noise = torch.rand(B, num_windows, device=x.device)
 
-        # Sort noise for each sample
-        ids_shuffle = torch.argsort(
-            noise, dim=1
-        )  # ascend: small is keep, large is remove
+        # Sort noise for each sample ascend: small is keep, large is remove
+        ids_shuffle = torch.argsort(noise, dim=1)
         ids_restore = torch.argsort(ids_shuffle, dim=1)
 
         # Generate the binary mask: 1 is *keep*, 0 is *remove*
         # Note this is opposite to original MAE
         mask = torch.zeros([B, num_windows], device=x.device)
-        mask[:, :len_keep] = 1
+        mask[:, : int(num_windows * (1 - mask_ratio))] = 1
         # Unshuffle to get the binary mask
         mask = torch.gather(mask, dim=1, index=ids_restore)
 
