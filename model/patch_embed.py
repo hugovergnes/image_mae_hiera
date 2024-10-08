@@ -1,5 +1,6 @@
 import numpy as np
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class CubeEmbed(nn.Module):
@@ -86,15 +87,19 @@ class PatchEmbed(nn.Module):
             self.grid_size = grid_size.astype(int)
             self.num_patches = int(self.grid_size.prod())
 
-    def forward(self, x):
+    def forward(self, x, mask=None):
         """_summary_
 
         Args:
             x (torch.Tensor): _description_
+            mask (torch.Tensor): _description_
 
         Returns:
             torch.Tensor: Output tensor has shape B, H_tokens, W_tokens, C
         """
-        x = self.proj(x)
-        x = x.permute(0, 2, 3, 1)
-        return x
+        if mask is None:
+            x = self.proj(x)
+        else:
+            interp_mask = F.interpolate(mask.float(), size=x.shape[2:], mode="nearest")
+            x = self.proj(x * interp_mask.bool())
+        return x.permute(0, 2, 3, 1)

@@ -365,10 +365,11 @@ class MaskedAutoencoderHiera(nn.Module):
         Returns:
             _type_: _description_
         """
-        x = self.patch_embed(x)
-        x = x + self._get_pos_embed(x.shape[1:3])
-
+        B = x.shape[0]
         mask = self.get_random_mask(x, self.mask_ratio)
+
+        x = self.patch_embed(x, mask=mask.view(B, 1, *self.mask_spatial_shape))
+        x = x + self._get_pos_embed(x.shape[1:3])
 
         # Flatten
         x = x.view(x.shape[0], -1, x.shape[-1])
